@@ -60,8 +60,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const dateEl = document.getElementById('exam-date');
   if (dateEl && !dateEl.value) dateEl.valueAsDate = new Date();
 
-  // PDF export
-  document.getElementById('export-pdf-btn').addEventListener('click', exportPDF);
+  // On-page summary generation
+  document.getElementById('generate-summary-btn').addEventListener('click', generateSummary);
 
   // Vignettes display
   document.getElementById('station-1-case').addEventListener('change', updateVignette);
