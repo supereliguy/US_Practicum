@@ -11,7 +11,6 @@
     crossorigin="anonymous"
     referrerpolicy="no-referrer">
   </script>
-
   <style>
     body { font-family: 'Inter', sans-serif; }
     table { width: 100%; border-collapse: collapse; }
@@ -456,14 +455,13 @@
       const residentName = (document.getElementById('resident-name')?.value || '').trim();
       const filename = `POCUS-Summary-${residentName ? residentName.replace(/s+/g, '_') : 'Grading'}.pdf`;
 
-      // Build summary node with proper visibility
+      // Build summary node for export. We'll temporarily add it to the DOM,
+      // render it, and then remove it.
       const node = buildSummaryNode();
+      // We'll position it off-screen so the user doesn't see a flicker.
       node.style.position = 'absolute';
-      node.style.top = '0';
-      node.style.left = '0';
-      node.style.opacity = '0';
-      node.style.pointerEvents = 'none';
-      node.style.zIndex = '-1';
+      node.style.top = '-9999px';
+      node.style.left = '-9999px';
       document.body.appendChild(node);
 
       btn.classList.add('print-hide');
@@ -472,13 +470,10 @@
         margin: [0.5, 0.5, 0.5, 0.5],    // inches
         filename,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-          scale: 2, 
+        html2canvas: {
+          scale: 2,
           useCORS: true,
-          scrollX: 0,
-          scrollY: 0,
-          windowWidth: node.scrollWidth,
-          windowHeight: node.scrollHeight
+          // The crucial part: html2canvas must render the *node's* dimensions, not the window's
         },
         jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
         pagebreak: { mode: ['avoid-all'] }
