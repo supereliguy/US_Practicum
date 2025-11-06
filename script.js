@@ -195,14 +195,54 @@ function buildSummaryNode() {
   return wrap;
 }
 
-function generateSummary() {
-  const summaryContainer = document.getElementById('on-page-summary-container');
-  if (!summaryContainer) {
-    console.error('On-page summary container not found!');
-    return;
-  }
+async function exportPDF() {
+  const btn = document.getElementById('export-pdf-btn');
+  const residentName = (document.getElementById('resident-name')?.value || '').trim();
+  const filename = `POCUS-Summary-${residentName ? residentName.replace(/\s+/g, '_') : 'Grading'}.pdf`;
 
-  const summaryNode = buildSummaryNode();
-  summaryContainer.innerHTML = ''; // Clear previous summary
-  summaryContainer.appendChild(summaryNode);
+  // Build summary node for export. It will be added to the DOM briefly,
+  // rendered by the browser, and then removed.
+  const node = buildSummaryNode();
+
+  // Style for off-screen rendering that's more reliable.
+  // We place it at the top, but make it invisible and non-interactive.
+  Object.assign(node.style, {
+    position: 'absolute',
+    top: '0',
+    left: '0',
+    zIndex: '-1', // Behind everything
+    visibility: 'hidden', // Won't be seen
+  });
+  document.body.appendChild(node);
+
+  btn.disabled = true;
+  btn.textContent = 'Generating...';
+
+  const options = {
+    margin: [0.5, 0.5, 0.5, 0.5], // inches
+    filename,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+    },
+    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
+    pagebreak: { mode: ['avoid-all'] }
+  };
+
+  // Allow the browser a moment to render the appended node.
+  // This delay is often the key to fixing blank or cut-off exports.
+  setTimeout(() => {
+    html2pdf().set(options).from(node).save()
+      .catch(err => {
+        console.error('PDF export failed:', err);
+        alert('PDF export failed. See console for details.');
+      })
+      .finally(() => {
+        // Cleanup is crucial
+        node.remove();
+        btn.disabled = false;
+        btn.textContent = 'Export as PDF';
+      });
+  }, 100); // A 100ms delay is usually sufficient.
 }
