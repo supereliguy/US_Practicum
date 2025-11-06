@@ -218,7 +218,10 @@ async function exportPDF() {
     html2canvas: {
       scale: 2,
       useCORS: true,
-      // The crucial part: html2canvas must render the *node's* dimensions, not the window's
+      // The crucial part: by specifying the node's scrollWidth and scrollHeight,
+      // we ensure the canvas matches the content, not the window.
+      width: node.scrollWidth,
+      height: node.scrollHeight,
     },
     jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
     pagebreak: { mode: ['avoid-all'] }
