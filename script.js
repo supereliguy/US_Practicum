@@ -225,8 +225,6 @@ async function exportPDF() {
     html2canvas: {
       scale: 2,
       useCORS: true,
-      // We no longer manually set width/height; let the library calculate it.
-      // This is often more reliable as it captures the rendered state.
     },
     jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
     pagebreak: { mode: ['avoid-all'] }
@@ -236,9 +234,6 @@ async function exportPDF() {
   // This delay is often the key to fixing blank or cut-off exports.
   setTimeout(() => {
     html2pdf().set(options).from(node).save()
-      .then(() => {
-        // Success
-      })
       .catch(err => {
         console.error('PDF export failed:', err);
         alert('PDF export failed. See console for details.');
