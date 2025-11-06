@@ -62,26 +62,10 @@
     #summary-pdf th, #summary-pdf td { border: 1px solid #e5e7eb; padding: 6px 8px; vertical-align: top; }
     #summary-pdf th { background: #f9fafb; text-align: left; font-weight: 700; }
     #summary-pdf .totals { text-align: right; font-weight: 800; font-size: 1.1rem; margin-top: 0.4rem; }
-    #summary-pdf .breakdown {
-      display: flex;
-      justify-content: space-around;
-      font-size: 0.9rem;
-      padding: 8px;
-      margin-top: 8px;
-      border-top: 1px solid #e5e7eb;
-    }
     #summary-pdf .grand { font-size: 1.2rem; color: #1a73e8; }
     #summary-pdf .notes { font-size: 0.85rem; white-space: pre-wrap; border: 1px solid #e5e7eb; padding: 8px; background: #fcfcfd; min-height: 1.75rem; }
     #summary-pdf .small { color:#6b7280; font-size: 0.75rem; margin-top: 0.2rem; }
     #summary-pdf .chip { display:inline-block; border:1px solid #e5e7eb; background:#f9fafb; border-radius:6px; padding:2px 6px; font-size:0.75rem; margin-right:6px; }
-
-    /* Styles for the on-page summary */
-    #on-page-summary-container #summary-pdf {
-      border: 2px solid #d1d5db;
-      padding: 1.5rem;
-      border-radius: 0.5rem;
-      background-color: #f9fafb;
-    }
   </style>
 </head>
 <body class="bg-gray-100 p-4 sm:p-8">
@@ -263,16 +247,13 @@
 
     <!-- Export -->
     <div class="mt-10 text-center print-hide">
-      <button id="generate-summary-btn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-blue-700 transition duration-200">
-        Generate Summary
+      <button id="export-pdf-btn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-blue-700 transition duration-200">
+        Export as PDF
       </button>
       <button id="export-pdf-btn" class="bg-gray-600 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-gray-700 transition duration-200 ml-4">
         Export as PDF
       </button>
     </div>
-
-    <!-- Container for the on-page summary -->
-    <div id="on-page-summary-container" class="mt-8"></div>
   </div>
 
   <script>
@@ -339,7 +320,6 @@
       if (dateEl && !dateEl.value) dateEl.valueAsDate = new Date();
 
       // PDF export
-      document.getElementById('generate-summary-btn').addEventListener('click', generateSummary);
       document.getElementById('export-pdf-btn').addEventListener('click', exportPDF);
 
       // Vignettes display
@@ -397,23 +377,12 @@
     function collectStationScores(stationNum) {
       const labels = getStationLabels();
       const selects = Array.from(document.querySelectorAll(`select.score-select[data-station="${stationNum}"]`));
-      let cognitiveTotal = 0;
-      let kinematicTotal = 0;
-
-      const rows = selects.map((sel, idx) => {
-        const score = parseInt(sel.value || "0", 10);
-        const label = labels[idx] || `Item ${idx+1}`;
-        // Categories: 0=Exam Selection, 1-5=Image Acquisition, 6-9=Interpretation/Integration
-        if (idx >= 1 && idx <= 5) { // Kinematic
-          kinematicTotal += score;
-        } else { // Cognitive
-          cognitiveTotal += score;
-        }
-        return { label, score };
-      });
-
-      const total = cognitiveTotal + kinematicTotal;
-      return { rows, total, cognitiveTotal, kinematicTotal };
+      const rows = selects.map((sel, idx) => ({
+        label: labels[idx] || `Item ${idx+1}`,
+        score: parseInt(sel.value || "0", 10)
+      }));
+      const total = rows.reduce((s, r) => s + (Number.isFinite(r.score) ? r.score : 0), 0);
+      return { rows, total };
     }
 
     function getAssignedCase(stationNum) {
@@ -452,10 +421,6 @@
             <thead><tr><th>Item</th><th>Score</th></tr></thead>
             <tbody>${body}</tbody>
           </table>
-          <div class="breakdown">
-            <div>Cognitive: <strong>${data.cognitiveTotal} / 16</strong></div>
-            <div>Kinematic: <strong>${data.kinematicTotal} / 10</strong></div>
-          </div>
           <div class="totals">Total: <span class="grand">${data.total}</span> / 26</div>
         `;
       };
@@ -531,18 +496,6 @@
         btn.classList.remove('print-hide');
         node.remove(); // cleanup
       }
-    }
-
-    function generateSummary() {
-      const container = document.getElementById('on-page-summary-container');
-      if (!container) {
-        console.error('Summary container not found!');
-        return;
-      }
-      container.innerHTML = ''; // Clear previous content
-      const summaryNode = buildSummaryNode();
-      container.appendChild(summaryNode);
-      container.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   </script>
 </body>
