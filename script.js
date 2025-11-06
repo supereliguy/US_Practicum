@@ -198,42 +198,51 @@ function buildSummaryNode() {
 async function exportPDF() {
   const btn = document.getElementById('export-pdf-btn');
   const residentName = (document.getElementById('resident-name')?.value || '').trim();
-  const filename = `POCUS-Summary-${residentName ? residentName.replace(/s+/g, '_') : 'Grading'}.pdf`;
+  const filename = `POCUS-Summary-${residentName ? residentName.replace(/\s+/g, '_') : 'Grading'}.pdf`;
 
-  // Build summary node for export. We'll temporarily add it to the DOM,
-  // render it, and then remove it.
+  // Build summary node for export. It will be added to the DOM briefly,
+  // rendered by the browser, and then removed.
   const node = buildSummaryNode();
-  // We'll position it off-screen so the user doesn't see a flicker.
-  node.style.position = 'absolute';
-  node.style.top = '-9999px';
-  node.style.left = '-9999px';
+
+  // Style for off-screen rendering that's more reliable.
+  // We place it at the top, but make it invisible and non-interactive.
+  Object.assign(node.style, {
+    position: 'absolute',
+    top: '0',
+    left: '0',
+    zIndex: '-1', // Behind everything
+    visibility: 'hidden', // Won't be seen
+  });
   document.body.appendChild(node);
 
-  btn.classList.add('print-hide');
+  btn.disabled = true;
+  btn.textContent = 'Generating...';
 
   const options = {
-    margin: [0.5, 0.5, 0.5, 0.5],    // inches
+    margin: [0.5, 0.5, 0.5, 0.5], // inches
     filename,
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: {
       scale: 2,
       useCORS: true,
-      // The crucial part: by specifying the node's scrollWidth and scrollHeight,
-      // we ensure the canvas matches the content, not the window.
-      width: node.scrollWidth,
-      height: node.scrollHeight,
     },
     jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
     pagebreak: { mode: ['avoid-all'] }
   };
 
-  try {
-    await html2pdf().set(options).from(node).save();
-  } catch (err) {
-    console.error('PDF export failed:', err);
-    alert('PDF export failed. See console for details.');
-  } finally {
-    btn.classList.remove('print-hide');
-    node.remove(); // cleanup
-  }
+  // Allow the browser a moment to render the appended node.
+  // This delay is often the key to fixing blank or cut-off exports.
+  setTimeout(() => {
+    html2pdf().set(options).from(node).save()
+      .catch(err => {
+        console.error('PDF export failed:', err);
+        alert('PDF export failed. See console for details.');
+      })
+      .finally(() => {
+        // Cleanup is crucial
+        node.remove();
+        btn.disabled = false;
+        btn.textContent = 'Export as PDF';
+      });
+  }, 100); // A 100ms delay is usually sufficient.
 }
