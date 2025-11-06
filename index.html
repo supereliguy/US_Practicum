@@ -5,12 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>POCUS Practicum Grading Form</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- html2pdf bundle (html2canvas + jsPDF) -->
-  <script
-    src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer">
-  </script>
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-gray-100 p-4 sm:p-8">
@@ -192,10 +186,13 @@
 
     <!-- Export -->
     <div class="mt-10 text-center print-hide">
-      <button id="export-pdf-btn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-blue-700 transition duration-200">
-        Export as PDF
+      <button id="generate-summary-btn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-blue-700 transition duration-200">
+        Generate Summary
       </button>
     </div>
+
+    <!-- Container for the on-page summary -->
+    <div id="on-page-summary-container" class="mt-8"></div>
   </div>
 
   <script src="script.js" defer></script>

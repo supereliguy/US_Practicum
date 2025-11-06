@@ -60,8 +60,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const dateEl = document.getElementById('exam-date');
   if (dateEl && !dateEl.value) dateEl.valueAsDate = new Date();
 
-  // PDF export
-  document.getElementById('export-pdf-btn').addEventListener('click', exportPDF);
+  // On-page summary generation
+  document.getElementById('generate-summary-btn').addEventListener('click', generateSummary);
 
   // Vignettes display
   document.getElementById('station-1-case').addEventListener('change', updateVignette);
@@ -195,45 +195,14 @@ function buildSummaryNode() {
   return wrap;
 }
 
-async function exportPDF() {
-  const btn = document.getElementById('export-pdf-btn');
-  const residentName = (document.getElementById('resident-name')?.value || '').trim();
-  const filename = `POCUS-Summary-${residentName ? residentName.replace(/s+/g, '_') : 'Grading'}.pdf`;
-
-  // Build summary node for export. We'll temporarily add it to the DOM,
-  // render it, and then remove it.
-  const node = buildSummaryNode();
-  // We'll position it off-screen so the user doesn't see a flicker.
-  node.style.position = 'absolute';
-  node.style.top = '-9999px';
-  node.style.left = '-9999px';
-  document.body.appendChild(node);
-
-  btn.classList.add('print-hide');
-
-  const options = {
-    margin: [0.5, 0.5, 0.5, 0.5],    // inches
-    filename,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: {
-      scale: 2,
-      useCORS: true,
-      // The crucial part: by specifying the node's scrollWidth and scrollHeight,
-      // we ensure the canvas matches the content, not the window.
-      width: node.scrollWidth,
-      height: node.scrollHeight,
-    },
-    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
-    pagebreak: { mode: ['avoid-all'] }
-  };
-
-  try {
-    await html2pdf().set(options).from(node).save();
-  } catch (err) {
-    console.error('PDF export failed:', err);
-    alert('PDF export failed. See console for details.');
-  } finally {
-    btn.classList.remove('print-hide');
-    node.remove(); // cleanup
+function generateSummary() {
+  const summaryContainer = document.getElementById('on-page-summary-container');
+  if (!summaryContainer) {
+    console.error('On-page summary container not found!');
+    return;
   }
+
+  const summaryNode = buildSummaryNode();
+  summaryContainer.innerHTML = ''; // Clear previous summary
+  summaryContainer.appendChild(summaryNode);
 }
