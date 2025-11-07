@@ -60,13 +60,20 @@
       const dateEl = document.getElementById('exam-date');
       if (dateEl && !dateEl.value) dateEl.valueAsDate = new Date();
 
-      // PDF export
-      document.getElementById('export-pdf-btn').addEventListener('click', exportPDF);
-
       // Vignettes display
       document.getElementById('station-1-case').addEventListener('change', updateVignette);
       document.getElementById('station-2-case').addEventListener('change', updateVignette);
+
+      // Summary generation
+      document.getElementById('generate-summary-btn').addEventListener('click', displaySummary);
     });
+
+    function displaySummary() {
+      const container = document.getElementById('summary-container');
+      const summaryNode = buildSummaryNode();
+      container.innerHTML = ''; // Clear previous summary
+      container.appendChild(summaryNode);
+    }
 
     function calculateTotals() {
       let station1Total = 0, station2Total = 0;
@@ -193,48 +200,4 @@
         <div class="small">Generated ${new Date().toLocaleString()}</div>
       `;
       return wrap;
-    }
-
-    async function exportPDF() {
-      const btn = document.getElementById('export-pdf-btn');
-      const residentName = (document.getElementById('resident-name')?.value || '').trim();
-      const filename = `POCUS-Summary-${residentName ? residentName.replace(/s+/g, '_') : 'Grading'}.pdf`;
-
-      // Build summary node with proper visibility
-      const node = buildSummaryNode();
-      node.style.position = 'absolute';
-      node.style.top = '0';
-      node.style.left = '0';
-      node.style.opacity = '0';
-      node.style.pointerEvents = 'none';
-      node.style.zIndex = '-1';
-      document.body.appendChild(node);
-
-      btn.classList.add('print-hide');
-
-      const options = {
-        margin: [0.5, 0.5, 0.5, 0.5],    // inches
-        filename,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          scrollX: 0,
-          scrollY: 0,
-          windowWidth: node.scrollWidth,
-          windowHeight: node.scrollHeight
-        },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all'] }
-      };
-
-      try {
-        await html2pdf().set(options).from(node).save();
-      } catch (err) {
-        console.error('PDF export failed:', err);
-        alert('PDF export failed. See console for details.');
-      } finally {
-        btn.classList.remove('print-hide');
-        node.remove(); // cleanup
-      }
     }
