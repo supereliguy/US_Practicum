@@ -31,6 +31,19 @@ body { font-family: 'Inter', sans-serif; }
       tr { page-break-inside: avoid; }
     }
 
+    /* ==== ON-PAGE SUMMARY ==== */
+    #summary-container {
+      padding: 1.5rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      background-color: #f9fafb;
+    }
+    #summary-container #summary-pdf {
+      /* Reset PDF-specific sizing */
+      width: auto;
+      padding: 0;
+    }
+
     /* ==== SUMMARY PDF (generated on export) ==== */
     #summary-pdf {
       width: 7.5in;                 /* fits inside 0.5" margins on letter */
